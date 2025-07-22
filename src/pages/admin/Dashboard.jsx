@@ -10,21 +10,46 @@ import {
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import StatCard from '../../components/common/StatCard';
-import { dashboardStats, salesData, customers, servicePlans } from '../../data/mockData';
+import { dashboardAPI, usersAPI } from '../../services/api';
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
+  const [stats, setStats] = useState({});
+  const [salesData, setSalesData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
-    // Mock users data
-    setUsers([
-      { id: 1, username: 'admin', role: 'admin', email: 'admin@company.com', status: 'active' },
-      { id: 2, username: 'sales1', role: 'sales', email: 'sales1@company.com', status: 'active' },
-      { id: 3, username: 'tech1', role: 'tech', email: 'tech1@company.com', status: 'active' },
-      { id: 4, username: 'customer1', role: 'customer', email: 'customer1@email.com', status: 'active' },
-    ]);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [usersResponse, statsResponse, salesResponse] = await Promise.all([
+          usersAPI.getAll(),
+          dashboardAPI.getStats(),
+          dashboardAPI.getSalesData()
+        ]);
+        
+        setUsers(usersResponse.data);
+        setStats(statsResponse.data);
+        setSalesData(salesResponse.data);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        // Fallback to empty data
+        setUsers([]);
+        setStats({
+          totalCustomers: 0,
+          monthlyRevenue: 0,
+          activeServices: 0,
+          openTickets: 0
+        });
+        setSalesData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const handleMenuOpen = (event, user) => {
@@ -63,37 +88,37 @@ export default function AdminDashboard() {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Total Customers"
-            value={dashboardStats.totalCustomers.toLocaleString()}
+            value={stats.totalCustomers?.toLocaleString() || '0'}
             icon={Users}
             color="primary"
-            trend={8.2}
+            trend={stats.customerGrowthRate}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Monthly Revenue"
-            value={`$${dashboardStats.monthlyRevenue.toLocaleString()}`}
+            value={`$${stats.monthlyRevenue?.toLocaleString() || '0'}`}
             icon={DollarSign}
             color="success"
-            trend={12.5}
+            trend={stats.revenueGrowthRate}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Active Services"
-            value={dashboardStats.activeServices.toLocaleString()}
+            value={stats.activeServices?.toLocaleString() || '0'}
             icon={Wifi}
             color="secondary"
-            trend={5.1}
+            trend={stats.serviceGrowthRate}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Open Tickets"
-            value={dashboardStats.openTickets}
+            value={stats.openTickets || '0'}
             icon={AlertCircle}
             color="warning"
-            trend={-15.3}
+            trend={stats.ticketTrend}
           />
         </Grid>
       </Grid>

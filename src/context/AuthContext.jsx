@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect} from 'react';
 import { jwtDecode } from 'jwt-decode';
-import axios from 'axios';
+import { authAPI } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -23,13 +23,11 @@ export function AuthProvider({ children }) {
     
     const login = async (username, password) => {
         try {
-        const response = await axios.post('http://localhost:5000/auth/login', { 
-            username, 
-            password 
-        });
+        const response = await authAPI.login({ username, password });
 
-        localStorage.setItem('token', response.data.access_token);
-        const decoded = jwtDecode(response.data.access_token);
+        const token = response.data.access_token || response.data.token;
+        localStorage.setItem('token', token);
+        const decoded = jwtDecode(token);
         setUser(decoded);
         return { success: true, role: decoded.role };
         } catch (error) {
@@ -41,6 +39,10 @@ export function AuthProvider({ children }) {
     const logout = () => {
         localStorage.removeItem('token');
         setUser(null);
+        // Optionally call backend logout
+        authAPI.logout().catch(() => {
+            // Ignore errors on logout
+        });
     };
     
     return (

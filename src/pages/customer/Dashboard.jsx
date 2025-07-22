@@ -13,10 +13,15 @@ import {
 } from 'lucide-react';
 import StatCard from '../../components/common/StatCard';
 import { useAuth } from '../../context/AuthContext';
+import { customersAPI, transactionsAPI, ticketsAPI } from '../../services/api';
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
   const [tabValue, setTabValue] = useState(0);
+  const [customerData, setCustomerData] = useState({});
+  const [billingHistory, setBillingHistory] = useState([]);
+  const [supportTickets, setSupportTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [ticketDialog, setTicketDialog] = useState(false);
   const [newTicket, setNewTicket] = useState({
     title: '',
@@ -24,32 +29,58 @@ export default function CustomerDashboard() {
     priority: 'medium',
   });
 
-  // Mock customer data
-  const customerData = {
-    plan: 'Premium Internet',
-    status: 'active',
-    monthlyBill: 59.99,
-    nextBilling: '2024-02-01',
-    dataUsage: 75, // percentage
-    downloadSpeed: 180,
-    uploadSpeed: 25,
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        if (user?.id) {
+          const [customerResponse, transactionsResponse, ticketsResponse] = await Promise.all([
+            customersAPI.getById(user.id),
+            transactionsAPI.getByCustomer(user.id),
+            ticketsAPI.getByCustomer(user.id)
+          ]);
+          
+          setCustomerData(customerResponse.data);
+          setBillingHistory(transactionsResponse.data);
+          setSupportTickets(ticketsResponse.data);
+        }
+      } catch (error) {
+        console.error('Error fetching customer data:', error);
+        // Fallback to empty data
+        setCustomerData({
+          plan: 'Basic Internet',
+          status: 'active',
+          monthlyBill: 29.99,
+          nextBilling: new Date().toISOString().split('T')[0],
+          dataUsage: 0,
+          downloadSpeed: 50,
+          uploadSpeed: 10,
+        });
+        setBillingHistory([]);
+        setSupportTickets([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const billingHistory = [
-    { id: 1, date: '2024-01-01', amount: 59.99, status: 'paid', description: 'Monthly service' },
-    { id: 2, date: '2023-12-01', amount: 59.99, status: 'paid', description: 'Monthly service' },
-    { id: 3, date: '2023-11-01', amount: 59.99, status: 'paid', description: 'Monthly service' },
-  ];
+    fetchData();
+  }, [user?.id]);
 
-  const supportTickets = [
-    { id: 1, title: 'Slow internet speed', status: 'open', created: '2024-01-05', priority: 'high' },
-    { id: 2, title: 'Billing question', status: 'resolved', created: '2023-12-20', priority: 'low' },
-  ];
-
-  const handleTicketSubmit = () => {
-    console.log('Creating ticket:', newTicket);
-    setTicketDialog(false);
-    setNewTicket({ title: '', description: '', priority: 'medium' });
+  const handleTicketSubmit = async () => {
+    try {
+      const ticketData = {
+        ...newTicket,
+        customerId: user.id,
+        customer: user.username
+      };
+      const response = await ticketsAPI.create(ticketData);
+      setSupportTickets(prev => [...prev, response.data]);
+      setTicketDialog(false);
+      setNewTicket({ title: '', description: '', priority: 'medium' });
+    } catch (error) {
+      console.error('Error creating ticket:', error);
+      // Handle error (show notification, etc.)
+    }
   };
 
   const getStatusColor = (status) => {

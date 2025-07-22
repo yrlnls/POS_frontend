@@ -14,7 +14,7 @@ import {
   Wrench, Wifi, Plus, Eye
 } from 'lucide-react';
 import StatCard from '../../components/common/StatCard';
-import { tickets, equipment } from '../../data/mockData';
+import { ticketsAPI, equipmentAPI, dashboardAPI, usersAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
 const statusColors = {
@@ -37,42 +37,78 @@ const equipmentStatusColors = {
 };
 
 export default function TicketSystem() {
-  const [ticketList, setTicketList] = useState([]);
+  const [tickets, setTickets] = useState([]);
+  const [equipment, setEquipment] = useState([]);
+  const [stats, setStats] = useState({});
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [tabValue, setTabValue] = useState(0);
   const [ticketDialog, setTicketDialog] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const { user } = useAuth();
 
   useEffect(() => {
-    setTicketList(tickets);
-    if (user.role === 'admin') {
-      setUsers([
-        { id: 1, username: 'tech1', role: 'tech' },
-        { id: 2, username: 'tech2', role: 'tech' },
-      ]);
-    }
-  }, [user]);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [ticketsResponse, equipmentResponse, statsResponse] = await Promise.all([
+          ticketsAPI.getAll(),
+          equipmentAPI.getAll(),
+          dashboardAPI.getTicketStats()
+        ]);
+        
+        setTickets(ticketsResponse.data);
+        setEquipment(equipmentResponse.data);
+        setStats(statsResponse.data);
+        
+        if (user.role === 'admin') {
+          const usersResponse = await usersAPI.getAll();
+          setUsers(usersResponse.data.filter(u => u.role === 'tech'));
+        }
+      } catch (error) {
+        console.error('Error fetching tech data:', error);
+        // Fallback to empty arrays
+        setTickets([]);
+        setEquipment([]);
+        setStats({});
+        setUsers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user.role]);
 
   const handleStatusChange = async (ticketId, newStatus) => {
-    setTicketList(prev => 
-      prev.map(ticket => 
-        ticket.id === ticketId ? { ...ticket, status: newStatus } : ticket
-      )
-    );
+    try {
+      await ticketsAPI.updateStatus(ticketId, newStatus);
+      setTickets(prev => 
+        prev.map(ticket => 
+          ticket.id === ticketId ? { ...ticket, status: newStatus } : ticket
+        )
+      );
+    } catch (error) {
+      console.error('Error updating ticket status:', error);
+    }
   };
 
   const handleAssigneeChange = async (ticketId, userId) => {
-    setTicketList(prev => 
-      prev.map(ticket => 
-        ticket.id === ticketId ? { ...ticket, assignee_id: userId } : ticket
-      )
-    );
+    try {
+      await ticketsAPI.assignTechnician(ticketId, userId);
+      setTickets(prev => 
+        prev.map(ticket => 
+          ticket.id === ticketId ? { ...ticket, assignee_id: userId } : ticket
+        )
+      );
+    } catch (error) {
+      console.error('Error assigning ticket:', error);
+    }
   };
 
-  const openTickets = ticketList.filter(t => t.status === 'open').length;
-  const inProgressTickets = ticketList.filter(t => t.status === 'in_progress').length;
-  const resolvedTickets = ticketList.filter(t => t.status === 'resolved').length;
+  const openTickets = tickets.filter(t => t.status === 'open').length;
+  const inProgressTickets = tickets.filter(t => t.status === 'in_progress').length;
+  const resolvedTickets = tickets.filter(t => t.status === 'resolved').length;
 
   return (
     <Container maxWidth="xl">
@@ -161,7 +197,7 @@ export default function TicketSystem() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {ticketList.map((ticket) => (
+                  {tickets.map((ticket) => (
                     <TableRow key={ticket.id} hover>
                       <TableCell>
                         <Typography variant="body2" fontWeight={600}>

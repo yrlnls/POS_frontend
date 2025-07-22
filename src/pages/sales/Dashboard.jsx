@@ -13,10 +13,15 @@ import {
 import StatCard from '../../components/common/StatCard';
 import ServicePlanCard from '../../components/common/ServicePlanCard';
 import CustomerCard from '../../components/common/CustomerCard';
-import { dashboardStats, servicePlans, customers, transactions } from '../../data/mockData';
+import { dashboardAPI, customersAPI, servicePlansAPI, transactionsAPI } from '../../services/api';
 
 export default function SalesDashboard() {
   const [tabValue, setTabValue] = useState(0);
+  const [customers, setCustomers] = useState([]);
+  const [servicePlans, setServicePlans] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [stats, setStats] = useState({});
+  const [loading, setLoading] = useState(true);
   const [customerDialog, setCustomerDialog] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -28,16 +33,52 @@ export default function SalesDashboard() {
     plan: '',
   });
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [customersResponse, plansResponse, transactionsResponse, statsResponse] = await Promise.all([
+          customersAPI.getAll(),
+          servicePlansAPI.getAll(),
+          transactionsAPI.getAll(),
+          dashboardAPI.getStats()
+        ]);
+        
+        setCustomers(customersResponse.data);
+        setServicePlans(plansResponse.data);
+        setTransactions(transactionsResponse.data);
+        setStats(statsResponse.data);
+      } catch (error) {
+        console.error('Error fetching sales data:', error);
+        // Fallback to empty arrays
+        setCustomers([]);
+        setServicePlans([]);
+        setTransactions([]);
+        setStats({});
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const filteredCustomers = customers.filter(customer =>
     customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     customer.phone.includes(searchTerm)
   );
 
-  const handleCustomerSubmit = () => {
-    console.log('Creating customer:', newCustomer);
-    setCustomerDialog(false);
-    setNewCustomer({ name: '', email: '', phone: '', address: '', plan: '' });
+  const handleCustomerSubmit = async () => {
+    try {
+      const response = await customersAPI.create(newCustomer);
+      setCustomers(prev => [...prev, response.data]);
+      setCustomerDialog(false);
+      setNewCustomer({ name: '', email: '', phone: '', address: '', plan: '' });
+    } catch (error) {
+      console.error('Error creating customer:', error);
+      // Handle error (show notification, etc.)
+    }
   };
 
   const getTransactionStatusColor = (status) => {
@@ -65,7 +106,7 @@ export default function SalesDashboard() {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Total Customers"
-            value={customers.length.toString()}
+            value={customers.length?.toString() || '0'}
             icon={Users}
             color="primary"
             subtitle="Active subscribers"
@@ -74,16 +115,16 @@ export default function SalesDashboard() {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Monthly Sales"
-            value="$12,450"
+            value={`$${stats.monthlySales?.toLocaleString() || '0'}`}
             icon={DollarSign}
             color="success"
-            trend={18.2}
+            trend={stats.salesGrowthRate}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="New Customers"
-            value="23"
+            value={stats.newCustomersThisMonth?.toString() || '0'}
             icon={UserPlus}
             color="secondary"
             subtitle="This month"
@@ -92,10 +133,10 @@ export default function SalesDashboard() {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Conversion Rate"
-            value="68%"
+            value={`${stats.conversionRate || 0}%`}
             icon={TrendingUp}
             color="primary"
-            trend={5.4}
+            trend={stats.conversionTrend}
           />
         </Grid>
       </Grid>
