@@ -4,10 +4,7 @@ import {
   Drawer, List, ListItem, ListItemIcon, ListItemText,
   ListItemButton, Divider, Avatar, Menu, MenuItem
 } from '@mui/material';
-import { 
-  Dashboard, Users, CreditCard, Headphones, User,
-  Settings, LogOut, Wifi, BarChart3, Wrench
-} from 'lucide-react';
+import { LayoutDashboard as Dashboard, Users, CreditCard, Headphones, User, Settings, LogOut, Wifi, BarChart3, Wrench } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
