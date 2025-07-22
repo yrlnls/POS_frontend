@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect} from 'react';
 import { jwtDecode } from 'jwt-decode';
-import { authAPI } from '../services/api';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
@@ -22,27 +22,48 @@ export function AuthProvider({ children }) {
     }, []);
     
     const login = async (username, password) => {
-        try {
-        const response = await authAPI.login({ username, password });
+        // Mock users for testing login without API
+        const mockUsers = [
+            { username: 'admin', password: 'admin123', role: 'admin' },
+            { username: 'sales1', password: 'sales123', role: 'sales' },
+            { username: 'tech1', password: 'tech123', role: 'tech' },
+            { username: 'customer1', password: 'customer123', role: 'customer' },
+        ];
 
-        const token = response.data.access_token || response.data.token;
-        localStorage.setItem('token', token);
-        const decoded = jwtDecode(token);
-        setUser(decoded);
-        return { success: true, role: decoded.role };
+        // Commented out real API call for testing with mock data
+        /*
+        try {
+            const response = await axios.post('http://127.0.0.1:5555/api/auth/login', { 
+                username, 
+                password 
+            });
+
+            localStorage.setItem('token', response.data.access_token);
+            const decoded = jwtDecode(response.data.access_token);
+            setUser(decoded);
+            return { success: true, role: decoded.role };
         } catch (error) {
-        console.error('Login error:', error);
-        return { success: false, message: error.response?.data?.message || 'Login failed'};
+            console.error('Login error:', error);
+            return { success: false, message: error.response?.data?.message || 'Login failed'};
+        }
+        */
+
+        // Check credentials against mock users
+        const user = mockUsers.find(u => u.username === username && u.password === password);
+        if (user) {
+            // Set user state with mock user data
+            setUser({ username: user.username, role: user.role });
+            // Optionally set a mock token in localStorage
+            localStorage.setItem('token', 'mock-token');
+            return { success: true, role: user.role };
+        } else {
+            return { success: false, message: 'Invalid username or password' };
         }
     };
     
     const logout = () => {
         localStorage.removeItem('token');
         setUser(null);
-        // Optionally call backend logout
-        authAPI.logout().catch(() => {
-            // Ignore errors on logout
-        });
     };
     
     return (

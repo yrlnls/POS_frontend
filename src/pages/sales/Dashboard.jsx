@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Container, Typography, Box, Grid, Card, CardContent,
   Button, TextField, Dialog, DialogTitle, DialogContent,
@@ -13,7 +13,9 @@ import {
 import StatCard from '../../components/common/StatCard';
 import ServicePlanCard from '../../components/common/ServicePlanCard';
 import CustomerCard from '../../components/common/CustomerCard';
-import { dashboardAPI, customersAPI, servicePlansAPI, transactionsAPI } from '../../services/api';
+// Commented out API imports for testing with mock data
+// import { dashboardAPI, customersAPI, servicePlansAPI, transactionsAPI } from '../../services/api';
+import { customers, servicePlans, transactions, dashboardStats } from '../../data/mockData';
 
 export default function SalesDashboard() {
   const [tabValue, setTabValue] = useState(0);
@@ -34,6 +36,8 @@ export default function SalesDashboard() {
   });
 
   useEffect(() => {
+    // Commented out fetching code for testing with mock data
+    /*
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -61,6 +65,14 @@ export default function SalesDashboard() {
     };
 
     fetchData();
+    */
+
+    // Using mock data for testing
+    setCustomers(customers);
+    setServicePlans(servicePlans);
+    setTransactions(transactions);
+    setStats(dashboardStats);
+    setLoading(false);
   }, []);
 
   const filteredCustomers = customers.filter(customer =>
@@ -71,8 +83,10 @@ export default function SalesDashboard() {
 
   const handleCustomerSubmit = async () => {
     try {
-      const response = await customersAPI.create(newCustomer);
-      setCustomers(prev => [...prev, response.data]);
+      // This would normally call the API, but for testing we just add locally
+      const newId = customers.length ? Math.max(...customers.map(c => c.id)) + 1 : 1;
+      const newCust = { id: newId, ...newCustomer };
+      setCustomers(prev => [...prev, newCust]);
       setCustomerDialog(false);
       setNewCustomer({ name: '', email: '', phone: '', address: '', plan: '' });
     } catch (error) {

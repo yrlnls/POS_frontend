@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Container, Typography, Box, Grid, Card, CardContent,
   Button, Table, TableBody, TableCell, TableContainer,
@@ -13,9 +13,11 @@ import {
 } from 'lucide-react';
 import StatCard from '../../components/common/StatCard';
 import { useAuth } from '../../context/AuthContext';
-import { customersAPI, transactionsAPI, ticketsAPI } from '../../services/api';
+// Commented out API imports for testing with mock data
+// import { customersAPI, transactionsAPI, ticketsAPI } from '../../services/api';
+import { customers, transactions, tickets } from '../../data/mockData';
 
-export default function CustomerDashboard() {
+function CustomerDashboard() {
   const { user } = useAuth();
   const [tabValue, setTabValue] = useState(0);
   const [customerData, setCustomerData] = useState({});
@@ -30,6 +32,8 @@ export default function CustomerDashboard() {
   });
 
   useEffect(() => {
+    // Commented out fetching code for testing with mock data
+    /*
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -64,9 +68,31 @@ export default function CustomerDashboard() {
     };
 
     fetchData();
-  }, [user?.id]);
+    */
 
+    // Using mock data for testing
+    if (user?.id) {
+      const mockCustomer = customers.find(c => c.id === user.id) || {};
+      const mockTransactions = transactions.filter(t => t.customerId === user.id);
+      const mockTickets = tickets.filter(t => t.customerId === user.id);
+
+      setCustomerData({
+        plan: mockCustomer.plan || 'Basic Internet',
+        status: mockCustomer.status || 'active',
+        monthlyBill: mockCustomer.monthlyBill || 29.99,
+        nextBilling: new Date().toISOString().split('T')[0],
+        dataUsage: 0,
+        downloadSpeed: 50,
+        uploadSpeed: 10,
+      });
+      setBillingHistory(mockTransactions);
+      setSupportTickets(mockTickets);
+      setLoading(false);
+    }
+  }, [user?.id]);
   const handleTicketSubmit = async () => {
+    // Commented out API call for testing with mock data
+    /*
     try {
       const ticketData = {
         ...newTicket,
@@ -81,20 +107,23 @@ export default function CustomerDashboard() {
       console.error('Error creating ticket:', error);
       // Handle error (show notification, etc.)
     }
-  };
-
-  const getStatusColor = (status) => {
-    const colors = {
-      active: 'success',
-      suspended: 'warning',
-      cancelled: 'error',
-      paid: 'success',
-      pending: 'warning',
-      overdue: 'error',
-      open: 'warning',
-      resolved: 'success',
+    */
+    // Mock ticket creation for testing
+    const newMockTicket = {
+      id: supportTickets.length + 1,
+      title: newTicket.title,
+      customer: user.username,
+      customerId: user.id,
+      status: 'open',
+      priority: newTicket.priority,
+      assignee_id: null,
+      created_at: new Date().toISOString(),
+      description: newTicket.description,
+      category: 'general',
     };
-    return colors[status] || 'default';
+    setSupportTickets(prev => [...prev, newMockTicket]);
+    setTicketDialog(false);
+    setNewTicket({ title: '', description: '', priority: 'medium' });
   };
 
   return (
@@ -414,3 +443,5 @@ export default function CustomerDashboard() {
     </Container>
   );
 }
+
+export default CustomerDashboard;
