@@ -50,6 +50,7 @@ const mockSettings = {
 
 export default function AdminDashboard() {
   const [tabValue, setTabValue] = useState(0);
+  const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [users, setUsers] = useState([]);
@@ -72,6 +73,11 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => {
+    // Set tab from navigation state
+    if (location.state?.tab !== undefined) {
+      setTabValue(location.state.tab);
+    }
+    
     if (!USE_MOCK_DATA) {
       const fetchData = async () => {
         try {

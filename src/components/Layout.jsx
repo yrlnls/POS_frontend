@@ -145,10 +145,14 @@ export default function Layout() {
           <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton
               onClick={() => {
-                navigate(item.path);
+                if (item.tab !== undefined) {
+                  navigate(item.path, { state: { tab: item.tab } });
+                } else {
+                  navigate(item.path);
+                }
                 if (isMobile) setMobileOpen(false);
               }}
-              selected={location.pathname === item.path}
+              selected={location.pathname === item.path || (item.tab !== undefined && location.pathname === item.path)}
               sx={{
                 borderRadius: 2,
                 '&.Mui-selected': {

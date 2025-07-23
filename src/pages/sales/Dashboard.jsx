@@ -21,6 +21,7 @@ import { customers as mockCustomers, servicePlans as mockServicePlans, transacti
 
 export default function SalesDashboard() {
   const [tabValue, setTabValue] = useState(0);
+  const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [customers, setCustomers] = useState([]);
@@ -40,6 +41,11 @@ export default function SalesDashboard() {
   });
 
   useEffect(() => {
+    // Set tab from navigation state
+    if (location.state?.tab !== undefined) {
+      setTabValue(location.state.tab);
+    }
+    
     // Commented out fetching code for testing with mock data
     /*
     const fetchData = async () => {

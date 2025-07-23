@@ -15,6 +15,7 @@ import StatCard from '../../components/common/StatCard';
 // Commented out API imports for testing with mock data
 // import { customersAPI, transactionsAPI, ticketsAPI } from '../../services/api';
 import { customers as mockCustomers, transactions as mockTransactions, tickets as mockTickets } from '../../data/mockData';
+import { useLocation } from 'react-router-dom';
 
 const USE_MOCK_DATA = true;
 
@@ -34,6 +35,11 @@ function CustomerDashboard() {
   });
 
   useEffect(() => {
+    // Set tab from navigation state
+    if (location.state?.tab !== undefined) {
+      setTabValue(location.state.tab);
+    }
+    
     if (!USE_MOCK_DATA) {
       // Here you would fetch real data from APIs
       // For now, just set loading false

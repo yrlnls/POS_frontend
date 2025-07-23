@@ -18,6 +18,7 @@ import StatCard from '../../components/common/StatCard';
 // import { ticketsAPI, equipmentAPI, dashboardAPI, usersAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { tickets as mockTickets, equipment as mockEquipment, dashboardStats as mockStats, customers as mockUsers } from '../../data/mockData';
+import { useLocation } from 'react-router-dom';
 
 const statusColors = {
   open: 'error',
@@ -40,6 +41,7 @@ const equipmentStatusColors = {
 
 export default function TicketSystem() {
   // Initialize state with mock data
+  const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [tickets, setTickets] = useState(mockTickets);
@@ -51,6 +53,13 @@ export default function TicketSystem() {
   const [ticketDialog, setTicketDialog] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const { user } = useAuth();
+
+  useEffect(() => {
+    // Set tab from navigation state
+    if (location.state?.tab !== undefined) {
+      setTabValue(location.state.tab);
+    }
+  }, [location.state]);
 
   // Commented out API fetching useEffect
   /*
