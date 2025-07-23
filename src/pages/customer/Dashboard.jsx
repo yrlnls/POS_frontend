@@ -12,13 +12,13 @@ import {
   Plus, Eye, MessageSquare
 } from 'lucide-react';
 import StatCard from '../../components/common/StatCard';
-import { useAuth } from '../../context/AuthContext';
 // Commented out API imports for testing with mock data
 // import { customersAPI, transactionsAPI, ticketsAPI } from '../../services/api';
-import { customers, transactions, tickets } from '../../data/mockData';
+import { customers as mockCustomers, transactions as mockTransactions, tickets as mockTickets } from '../../data/mockData';
+
+const USE_MOCK_DATA = true;
 
 function CustomerDashboard() {
-  const { user } = useAuth();
   const [tabValue, setTabValue] = useState(0);
   const [customerData, setCustomerData] = useState({});
   const [billingHistory, setBillingHistory] = useState([]);
@@ -32,50 +32,14 @@ function CustomerDashboard() {
   });
 
   useEffect(() => {
-    // Commented out fetching code for testing with mock data
-    /*
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        if (user?.id) {
-          const [customerResponse, transactionsResponse, ticketsResponse] = await Promise.all([
-            customersAPI.getById(user.id),
-            transactionsAPI.getByCustomer(user.id),
-            ticketsAPI.getByCustomer(user.id)
-          ]);
-          
-          setCustomerData(customerResponse.data);
-          setBillingHistory(transactionsResponse.data);
-          setSupportTickets(ticketsResponse.data);
-        }
-      } catch (error) {
-        console.error('Error fetching customer data:', error);
-        // Fallback to empty data
-        setCustomerData({
-          plan: 'Basic Internet',
-          status: 'active',
-          monthlyBill: 29.99,
-          nextBilling: new Date().toISOString().split('T')[0],
-          dataUsage: 0,
-          downloadSpeed: 50,
-          uploadSpeed: 10,
-        });
-        setBillingHistory([]);
-        setSupportTickets([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-    */
-
-    // Using mock data for testing
-    if (user?.id) {
-      const mockCustomer = customers.find(c => c.id === user.id) || {};
-      const mockTransactions = transactions.filter(t => t.customerId === user.id);
-      const mockTickets = tickets.filter(t => t.customerId === user.id);
-
+    if (!USE_MOCK_DATA) {
+      // Here you would fetch real data from APIs
+      // For now, just set loading false
+      setLoading(false);
+    } else {
+      // Use mock data directly without filtering by user id
+      // For demo, pick first customer as current customer
+      const mockCustomer = mockCustomers[0] || {};
       setCustomerData({
         plan: mockCustomer.plan || 'Basic Internet',
         status: mockCustomer.status || 'active',
@@ -89,31 +53,15 @@ function CustomerDashboard() {
       setSupportTickets(mockTickets);
       setLoading(false);
     }
-  }, [user?.id]);
-  const handleTicketSubmit = async () => {
-    // Commented out API call for testing with mock data
-    /*
-    try {
-      const ticketData = {
-        ...newTicket,
-        customerId: user.id,
-        customer: user.username
-      };
-      const response = await ticketsAPI.create(ticketData);
-      setSupportTickets(prev => [...prev, response.data]);
-      setTicketDialog(false);
-      setNewTicket({ title: '', description: '', priority: 'medium' });
-    } catch (error) {
-      console.error('Error creating ticket:', error);
-      // Handle error (show notification, etc.)
-    }
-    */
+  }, []);
+
+  const handleTicketSubmit = () => {
     // Mock ticket creation for testing
     const newMockTicket = {
       id: supportTickets.length + 1,
       title: newTicket.title,
-      customer: user.username,
-      customerId: user.id,
+      customer: customerData.name || 'Customer',
+      customerId: customerData.id || null,
       status: 'open',
       priority: newTicket.priority,
       assignee_id: null,
@@ -124,6 +72,27 @@ function CustomerDashboard() {
     setSupportTickets(prev => [...prev, newMockTicket]);
     setTicketDialog(false);
     setNewTicket({ title: '', description: '', priority: 'medium' });
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'open':
+        return 'error';
+      case 'in_progress':
+        return 'warning';
+      case 'resolved':
+        return 'success';
+      case 'completed':
+        return 'success';
+      case 'pending':
+        return 'warning';
+      default:
+        return 'default';
+    }
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
   };
 
   return (
@@ -152,7 +121,7 @@ function CustomerDashboard() {
             value={customerData.plan}
             icon={Wifi}
             color="primary"
-            subtitle={`$${customerData.monthlyBill}/month`}
+            subtitle={`Kes${customerData.monthlyBill}/month`}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -209,7 +178,7 @@ function CustomerDashboard() {
       {/* Main Content Tabs */}
       <Card>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
+          <Tabs value={tabValue} onChange={handleTabChange}>
             <Tab label="Billing History" />
             <Tab label="Support Tickets" />
             <Tab label="Account Settings" />
@@ -320,7 +289,7 @@ function CustomerDashboard() {
                         />
                       </TableCell>
                       <TableCell>
-                        {new Date(ticket.created).toLocaleDateString()}
+                        {new Date(ticket.created_at).toLocaleDateString()}
                       </TableCell>
                       <TableCell align="right">
                         <Button size="small" startIcon={<MessageSquare />}>

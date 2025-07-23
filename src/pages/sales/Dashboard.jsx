@@ -13,9 +13,11 @@ import {
 import StatCard from '../../components/common/StatCard';
 import ServicePlanCard from '../../components/common/ServicePlanCard';
 import CustomerCard from '../../components/common/CustomerCard';
+const USE_MOCK_DATA = true;
+
 // Commented out API imports for testing with mock data
-// import { dashboardAPI, customersAPI, servicePlansAPI, transactionsAPI } from '../../services/api';
-import { customers, servicePlans, transactions, dashboardStats } from '../../data/mockData';
+import { dashboardAPI, customersAPI, servicePlansAPI, transactionsAPI } from '../../services/api';
+import { customers as mockCustomers, servicePlans as mockServicePlans, transactions as mockTransactions, dashboardStats } from '../../data/mockData';
 
 export default function SalesDashboard() {
   const [tabValue, setTabValue] = useState(0);
@@ -68,12 +70,16 @@ export default function SalesDashboard() {
     */
 
     // Using mock data for testing
-    setCustomers(customers);
-    setServicePlans(servicePlans);
-    setTransactions(transactions);
+    setCustomers(mockCustomers);
+    setServicePlans(mockServicePlans);
+    setTransactions(mockTransactions);
     setStats(dashboardStats);
     setLoading(false);
   }, []);
+
+  // Added to ensure service plans, transactions, and customers are displayed properly
+  // The existing code already maps these in the UI, so no changes needed there
+
 
   const filteredCustomers = customers.filter(customer =>
     customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

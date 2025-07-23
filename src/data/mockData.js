@@ -188,6 +188,10 @@ export const dashboardStats = {
   customerSatisfaction: 4.2,
   networkUptime: 99.8,
   averageResponseTime: 2.3,
+  monthlySales: 74580,
+  salesGrowthRate: -5.4,
+  conversionRate: 12,
+  conversionTrend: 1.2,
 };
 
 export const salesData = [

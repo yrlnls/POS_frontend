@@ -14,8 +14,10 @@ import {
   Wrench, Wifi, Plus, Eye
 } from 'lucide-react';
 import StatCard from '../../components/common/StatCard';
-import { ticketsAPI, equipmentAPI, dashboardAPI, usersAPI } from '../../services/api';
+// Commented out API imports as per mock data usage
+// import { ticketsAPI, equipmentAPI, dashboardAPI, usersAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { tickets as mockTickets, equipment as mockEquipment, dashboardStats as mockStats, customers as mockUsers } from '../../data/mockData';
 
 const statusColors = {
   open: 'error',
@@ -37,16 +39,19 @@ const equipmentStatusColors = {
 };
 
 export default function TicketSystem() {
-  const [tickets, setTickets] = useState([]);
-  const [equipment, setEquipment] = useState([]);
-  const [stats, setStats] = useState({});
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Initialize state with mock data
+  const [tickets, setTickets] = useState(mockTickets);
+  const [equipment, setEquipment] = useState(mockEquipment);
+  const [stats, setStats] = useState(mockStats);
+  const [users, setUsers] = useState(mockUsers.filter(u => u.status === 'active')); // Assuming active users as mock users
+  const [loading, setLoading] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const [ticketDialog, setTicketDialog] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const { user } = useAuth();
 
+  // Commented out API fetching useEffect
+  /*
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -79,31 +84,24 @@ export default function TicketSystem() {
 
     fetchData();
   }, [user.role]);
+  */
 
   const handleStatusChange = async (ticketId, newStatus) => {
-    try {
-      await ticketsAPI.updateStatus(ticketId, newStatus);
-      setTickets(prev => 
-        prev.map(ticket => 
-          ticket.id === ticketId ? { ...ticket, status: newStatus } : ticket
-        )
-      );
-    } catch (error) {
-      console.error('Error updating ticket status:', error);
-    }
+    // Since we are using mock data, just update state locally
+    setTickets(prev => 
+      prev.map(ticket => 
+        ticket.id === ticketId ? { ...ticket, status: newStatus } : ticket
+      )
+    );
   };
 
   const handleAssigneeChange = async (ticketId, userId) => {
-    try {
-      await ticketsAPI.assignTechnician(ticketId, userId);
-      setTickets(prev => 
-        prev.map(ticket => 
-          ticket.id === ticketId ? { ...ticket, assignee_id: userId } : ticket
-        )
-      );
-    } catch (error) {
-      console.error('Error assigning ticket:', error);
-    }
+    // Since we are using mock data, just update state locally
+    setTickets(prev => 
+      prev.map(ticket => 
+        ticket.id === ticketId ? { ...ticket, assignee_id: userId } : ticket
+      )
+    );
   };
 
   const openTickets = tickets.filter(t => t.status === 'open').length;
@@ -371,7 +369,7 @@ export default function TicketSystem() {
                       <Typography variant="h6">Network Uptime</Typography>
                     </Box>
                     <Typography variant="h3" color="success.main" gutterBottom>
-                      99.8%
+                      {stats.networkUptime}%
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Last 30 days
@@ -387,7 +385,7 @@ export default function TicketSystem() {
                       <Typography variant="h6">Active Connections</Typography>
                     </Box>
                     <Typography variant="h3" color="primary.main" gutterBottom>
-                      1,247
+                      {stats.totalCustomers}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Currently online
