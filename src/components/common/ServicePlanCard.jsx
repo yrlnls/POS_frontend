@@ -1,4 +1,4 @@
-import { Card, CardContent, Typography, Box, Button, Chip, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Card, CardContent, Typography, Box, Button, Chip, List, ListItem, ListItemIcon, ListItemText, useMediaQuery, useTheme } from '@mui/material';
 import { Check, Wifi, Users, Shield, Headphones } from 'lucide-react';
 
 const planFeatures = {
@@ -23,6 +23,8 @@ const planFeatures = {
 };
 
 export default function ServicePlanCard({ plan, onSelect, selected = false }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const features = planFeatures[plan.type] || [];
   
   return (
@@ -54,12 +56,12 @@ export default function ServicePlanCard({ plan, onSelect, selected = false }) {
           }}
         />
       )}
-      <CardContent sx={{ p: 3 }}>
+      <CardContent sx={{ p: isMobile ? 2 : 3 }}>
         <Box sx={{ textAlign: 'center', mb: 3 }}>
-          <Typography variant="h5" gutterBottom color="primary">
+          <Typography variant={isMobile ? "h6" : "h5"} gutterBottom color="primary">
             {plan.name}
           </Typography>
-          <Typography variant="h3" component="div" sx={{ mb: 1 }}>
+          <Typography variant={isMobile ? "h4" : "h3"} component="div" sx={{ mb: 1 }}>
             ${plan.price}
             <Typography variant="body2" component="span" color="text.secondary">
               /month
@@ -70,15 +72,15 @@ export default function ServicePlanCard({ plan, onSelect, selected = false }) {
           </Typography>
         </Box>
 
-        <List dense sx={{ mb: 3 }}>
+        <List dense sx={{ mb: isMobile ? 2 : 3 }}>
           {features.map((feature, index) => (
             <ListItem key={index} sx={{ px: 0 }}>
               <ListItemIcon sx={{ minWidth: 32 }}>
-                <feature.icon size={16} color="#059669" />
+                <feature.icon size={isMobile ? 14 : 16} color="#059669" />
               </ListItemIcon>
               <ListItemText 
                 primary={feature.text}
-                primaryTypographyProps={{ variant: 'body2' }}
+                primaryTypographyProps={{ variant: isMobile ? 'caption' : 'body2' }}
               />
             </ListItem>
           ))}
@@ -87,7 +89,7 @@ export default function ServicePlanCard({ plan, onSelect, selected = false }) {
         <Button
           variant={selected ? "contained" : "outlined"}
           fullWidth
-          size="large"
+          size={isMobile ? "medium" : "large"}
           onClick={(e) => {
             e.stopPropagation();
             onSelect?.(plan);

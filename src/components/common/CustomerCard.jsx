@@ -1,4 +1,4 @@
-import { Card, CardContent, Typography, Box, Chip, IconButton, Menu, MenuItem } from '@mui/material';
+import { Card, CardContent, Typography, Box, Chip, IconButton, Menu, MenuItem, useMediaQuery, useTheme } from '@mui/material';
 import { MoreVertical, User, Phone, Mail, MapPin, Calendar } from 'lucide-react';
 import { useState } from 'react';
 
@@ -11,6 +11,8 @@ const statusColors = {
 
 export default function CustomerCard({ customer, onEdit, onView, onDelete }) {
   const [anchorEl, setAnchorEl] = useState(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleMenuOpen = (event) => {
     event.stopPropagation();
@@ -39,12 +41,18 @@ export default function CustomerCard({ customer, onEdit, onView, onDelete }) {
   return (
     <Card sx={{ cursor: 'pointer' }} onClick={() => onView?.(customer)}>
       <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'flex-start', 
+          mb: 2,
+          flexDirection: isMobile ? 'column' : 'row'
+        }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box
               sx={{
-                width: 48,
-                height: 48,
+                width: isMobile ? 40 : 48,
+                height: isMobile ? 40 : 48,
                 borderRadius: '50%',
                 backgroundColor: 'primary.light',
                 display: 'flex',
@@ -53,10 +61,10 @@ export default function CustomerCard({ customer, onEdit, onView, onDelete }) {
                 color: 'white',
               }}
             >
-              <User size={24} />
+              <User size={isMobile ? 20 : 24} />
             </Box>
             <Box>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant={isMobile ? "body1" : "h6"} gutterBottom>
                 {customer.name}
               </Typography>
               <Chip
@@ -66,33 +74,37 @@ export default function CustomerCard({ customer, onEdit, onView, onDelete }) {
               />
             </Box>
           </Box>
-          <IconButton onClick={handleMenuOpen} size="small">
+          <IconButton 
+            onClick={handleMenuOpen} 
+            size="small"
+            sx={{ mt: isMobile ? 1 : 0, alignSelf: isMobile ? 'flex-end' : 'auto' }}
+          >
             <MoreVertical size={16} />
           </IconButton>
         </Box>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 0.5 : 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Phone size={16} color="#64748b" />
-            <Typography variant="body2" color="text.secondary">
+            <Phone size={isMobile ? 14 : 16} color="#64748b" />
+            <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">
               {customer.phone}
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Mail size={16} color="#64748b" />
-            <Typography variant="body2" color="text.secondary">
+            <Mail size={isMobile ? 14 : 16} color="#64748b" />
+            <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">
               {customer.email}
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <MapPin size={16} color="#64748b" />
-            <Typography variant="body2" color="text.secondary">
+            <MapPin size={isMobile ? 14 : 16} color="#64748b" />
+            <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">
               {customer.address}
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Calendar size={16} color="#64748b" />
-            <Typography variant="body2" color="text.secondary">
+            <Calendar size={isMobile ? 14 : 16} color="#64748b" />
+            <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">
               Joined {new Date(customer.joinDate).toLocaleDateString()}
             </Typography>
           </Box>

@@ -2,13 +2,14 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Box, CssBaseline, AppBar, Toolbar, Typography, Button,
   Drawer, List, ListItem, ListItemIcon, ListItemText,
-  ListItemButton, Divider, Avatar, Menu, MenuItem
+  ListItemButton, Divider, Avatar, Menu, MenuItem, IconButton,
+  useMediaQuery, useTheme
 } from '@mui/material';
-import { LayoutDashboard as Dashboard, Users, CreditCard, Headphones, User, Settings, LogOut, Wifi, BarChart3, Wrench } from 'lucide-react';
+import { LayoutDashboard as Dashboard, Users, CreditCard, Headphones, User, Settings, LogOut, Wifi, BarChart3, Wrench, Menu as MenuIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-const drawerWidth = 280;
+const drawerWidth = 260;
 
 const navigationItems = {
   admin: [
@@ -41,7 +42,10 @@ export default function Layout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [anchorEl, setAnchorEl] = useState(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -57,6 +61,10 @@ export default function Layout() {
     navigate('/login');
   };
 
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
   const userNavItems = user ? navigationItems[user.role] || [] : [];
 
   if (!user || location.pathname === '/login' || location.pathname === '/') {
@@ -70,6 +78,84 @@ export default function Layout() {
     );
   }
 
+  const drawer = (
+    <>
+      <Box sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: 2,
+              backgroundColor: 'primary.main',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+            }}
+          >
+            <Wifi size={24} />
+          </Box>
+          <Box>
+            <Typography variant="h6" color="primary.main" fontWeight={700}>
+              Capital POS
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Network Services
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
+
+      <Divider />
+
+      <List sx={{ px: 2, py: 1 }}>
+        {userNavItems.map((item) => (
+          <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
+            <ListItemButton
+              onClick={() => {
+                navigate(item.path);
+                if (isMobile) setMobileOpen(false);
+              }}
+              selected={location.pathname === item.path}
+              sx={{
+                borderRadius: 2,
+                '&.Mui-selected': {
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                  },
+                  '& .MuiListItemIcon-root': {
+                    color: 'white',
+                  },
+                },
+                '&:hover': {
+                  backgroundColor: 'primary.light',
+                  color: 'white',
+                  '& .MuiListItemIcon-root': {
+                    color: 'white',
+                  },
+                },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <item.icon size={20} />
+              </ListItemIcon>
+              <ListItemText 
+                primary={item.text}
+                primaryTypographyProps={{
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+    </>
+  );
+
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
@@ -78,14 +164,25 @@ export default function Layout() {
       <AppBar 
         position="fixed" 
         sx={{ 
-          width: `calc(100% - ${drawerWidth}px)`, 
-          ml: `${drawerWidth}px`,
+          width: { md: `calc(100% - ${drawerWidth}px)` }, 
+          ml: { md: `${drawerWidth}px` },
           backgroundColor: 'white',
           color: 'text.primary',
           boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
         }}
       >
         <Toolbar>
+          {isMobile && (
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
           <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: 'primary.main' }}>
             Capital POS System
           </Typography>
@@ -117,99 +214,59 @@ export default function Layout() {
       </AppBar>
 
       {/* Sidebar */}
-      <Drawer
+      <Box
+        component="nav"
         sx={{
-          width: drawerWidth,
+          width: { md: drawerWidth },
           flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: drawerWidth,
-            boxSizing: 'border-box',
-            backgroundColor: '#f8fafc',
-            borderRight: '1px solid #e2e8f0',
-          },
         }}
-        variant="permanent"
-        anchor="left"
       >
-        <Box sx={{ p: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box
-              sx={{
-                width: 40,
-                height: 40,
-                borderRadius: 2,
-                backgroundColor: 'primary.main',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-              }}
-            >
-              <Wifi size={24} />
-            </Box>
-            <Box>
-              <Typography variant="h6" color="primary.main" fontWeight={700}>
-                Capital POS
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Network Services
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-
-        <Divider />
-
-        <List sx={{ px: 2, py: 1 }}>
-          {userNavItems.map((item) => (
-            <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
-              <ListItemButton
-                onClick={() => navigate(item.path)}
-                selected={location.pathname === item.path}
-                sx={{
-                  borderRadius: 2,
-                  '&.Mui-selected': {
-                    backgroundColor: 'primary.main',
-                    color: 'white',
-                    '&:hover': {
-                      backgroundColor: 'primary.dark',
-                    },
-                    '& .MuiListItemIcon-root': {
-                      color: 'white',
-                    },
-                  },
-                  '&:hover': {
-                    backgroundColor: 'primary.light',
-                    color: 'white',
-                    '& .MuiListItemIcon-root': {
-                      color: 'white',
-                    },
-                  },
-                }}
-              >
-                <ListItemIcon sx={{ minWidth: 40 }}>
-                  <item.icon size={20} />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={item.text}
-                  primaryTypographyProps={{
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </Drawer>
+        {/* Mobile drawer */}
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{
+            keepMounted: true, // Better open performance on mobile.
+          }}
+          sx={{
+            display: { xs: 'block', md: 'none' },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth,
+              backgroundColor: '#f8fafc',
+              borderRight: '1px solid #e2e8f0',
+            },
+          }}
+        >
+          {drawer}
+        </Drawer>
+        
+        {/* Desktop drawer */}
+        <Drawer
+          variant="permanent"
+          sx={{
+            display: { xs: 'none', md: 'block' },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth,
+              backgroundColor: '#f8fafc',
+              borderRight: '1px solid #e2e8f0',
+            },
+          }}
+          open
+        >
+          {drawer}
+        </Drawer>
+      </Box>
 
       {/* Main Content */}
       <Box
         component="main"
         sx={{ 
           flexGrow: 1, 
-          p: 3, 
-          width: `calc(100% - ${drawerWidth}px)`,
+          p: { xs: 2, sm: 3 }, 
+          width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
           marginTop: '64px',
           backgroundColor: '#f8fafc',
           minHeight: 'calc(100vh - 64px)',

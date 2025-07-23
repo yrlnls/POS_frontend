@@ -4,7 +4,7 @@ import {
   Button, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Chip, Dialog, DialogTitle,
   DialogContent, DialogActions, TextField, Tabs, Tab,
-  LinearProgress, Alert
+  LinearProgress, Alert, useMediaQuery, useTheme
 } from '@mui/material';
 import { 
   Wifi, DollarSign, Calendar, AlertCircle,
@@ -20,6 +20,8 @@ const USE_MOCK_DATA = true;
 
 function CustomerDashboard() {
   const [tabValue, setTabValue] = useState(0);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [customerData, setCustomerData] = useState({});
   const [billingHistory, setBillingHistory] = useState([]);
   const [supportTickets, setSupportTickets] = useState([]);
@@ -96,9 +98,9 @@ function CustomerDashboard() {
   };
 
   return (
-    <Container maxWidth="xl">
+    <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h3" gutterBottom>
+        <Typography variant={isMobile ? "h4" : "h3"} gutterBottom>
           My Account
         </Typography>
         <Typography variant="body1" color="text.secondary">
@@ -115,7 +117,7 @@ function CustomerDashboard() {
 
       {/* Account Overview */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={6} sm={6} md={3}>
           <StatCard
             title="Current Plan"
             value={customerData.plan}
@@ -124,7 +126,7 @@ function CustomerDashboard() {
             subtitle={`Kes${customerData.monthlyBill}/month`}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={6} sm={6} md={3}>
           <StatCard
             title="Account Status"
             value={customerData.status}
@@ -133,7 +135,7 @@ function CustomerDashboard() {
             subtitle="Service active"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={6} sm={6} md={3}>
           <StatCard
             title="Download Speed"
             value={`${customerData.downloadSpeed} Mbps`}
@@ -142,7 +144,7 @@ function CustomerDashboard() {
             subtitle="Current speed"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={6} sm={6} md={3}>
           <StatCard
             title="Upload Speed"
             value={`${customerData.uploadSpeed} Mbps`}
@@ -156,7 +158,7 @@ function CustomerDashboard() {
       {/* Data Usage */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
-          <Typography variant="h5" gutterBottom>
+          <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
             Monthly Data Usage
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -178,7 +180,12 @@ function CustomerDashboard() {
       {/* Main Content Tabs */}
       <Card>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={tabValue} onChange={handleTabChange}>
+          <Tabs 
+            value={tabValue} 
+            onChange={handleTabChange}
+            variant={isMobile ? "scrollable" : "standard"}
+            scrollButtons={isMobile ? "auto" : false}
+          >
             <Tab label="Billing History" />
             <Tab label="Support Tickets" />
             <Tab label="Account Settings" />
@@ -189,19 +196,23 @@ function CustomerDashboard() {
         {tabValue === 0 && (
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h5">Billing History</Typography>
-              <Button variant="outlined" startIcon={<Download />}>
-                Download Statement
+              <Typography variant={isMobile ? "h6" : "h5"}>Billing History</Typography>
+              <Button 
+                variant="outlined" 
+                startIcon={!isMobile && <Download />}
+                size={isMobile ? "small" : "medium"}
+              >
+                {isMobile ? "Download" : "Download Statement"}
               </Button>
             </Box>
 
-            <TableContainer>
+            <TableContainer sx={{ overflowX: 'auto' }}>
               <Table>
                 <TableHead>
                   <TableRow>
                     <TableCell>Date</TableCell>
                     <TableCell>Description</TableCell>
-                    <TableCell>Amount</TableCell>
+                    {!isMobile && <TableCell>Amount</TableCell>}
                     <TableCell>Status</TableCell>
                     <TableCell align="right">Actions</TableCell>
                   </TableRow>
@@ -212,12 +223,23 @@ function CustomerDashboard() {
                       <TableCell>
                         {new Date(bill.date).toLocaleDateString()}
                       </TableCell>
-                      <TableCell>{bill.description}</TableCell>
                       <TableCell>
+                        <Box>
+                          <Typography variant="body2">
+                            {bill.description}
+                          </Typography>
+                          {isMobile && (
+                            <Typography variant="body2" fontWeight={600}>
+                              ${bill.amount}
+                            </Typography>
+                          )}
+                        </Box>
+                      </TableCell>
+                      {!isMobile && <TableCell>
                         <Typography variant="body2" fontWeight={600}>
                           ${bill.amount}
                         </Typography>
-                      </TableCell>
+                      </TableCell>}
                       <TableCell>
                         <Chip
                           label={bill.status}
@@ -226,8 +248,8 @@ function CustomerDashboard() {
                         />
                       </TableCell>
                       <TableCell align="right">
-                        <Button size="small" startIcon={<Eye />}>
-                          View
+                        <Button size="small" startIcon={!isMobile && <Eye />}>
+                          {isMobile ? "View" : "View"}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -242,25 +264,26 @@ function CustomerDashboard() {
         {tabValue === 1 && (
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h5">Support Tickets</Typography>
+              <Typography variant={isMobile ? "h6" : "h5"}>Support Tickets</Typography>
               <Button 
                 variant="contained" 
-                startIcon={<Plus />}
+                startIcon={!isMobile && <Plus />}
                 onClick={() => setTicketDialog(true)}
+                size={isMobile ? "small" : "medium"}
               >
-                Create Ticket
+                {isMobile ? "Create" : "Create Ticket"}
               </Button>
             </Box>
 
-            <TableContainer>
+            <TableContainer sx={{ overflowX: 'auto' }}>
               <Table>
                 <TableHead>
                   <TableRow>
                     <TableCell>Ticket #</TableCell>
                     <TableCell>Title</TableCell>
                     <TableCell>Status</TableCell>
-                    <TableCell>Priority</TableCell>
-                    <TableCell>Created</TableCell>
+                    {!isMobile && <TableCell>Priority</TableCell>}
+                    {!isMobile && <TableCell>Created</TableCell>}
                     <TableCell align="right">Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -272,7 +295,23 @@ function CustomerDashboard() {
                           #{ticket.id}
                         </Typography>
                       </TableCell>
-                      <TableCell>{ticket.title}</TableCell>
+                      <TableCell>
+                        <Box>
+                          <Typography variant="body2">
+                            {ticket.title}
+                          </Typography>
+                          {isMobile && (
+                            <Box sx={{ mt: 0.5 }}>
+                              <Chip
+                                label={ticket.priority}
+                                color={ticket.priority === 'high' ? 'error' : 'default'}
+                                size="small"
+                                variant="outlined"
+                              />
+                            </Box>
+                          )}
+                        </Box>
+                      </TableCell>
                       <TableCell>
                         <Chip
                           label={ticket.status}
@@ -280,20 +319,20 @@ function CustomerDashboard() {
                           size="small"
                         />
                       </TableCell>
-                      <TableCell>
+                      {!isMobile && <TableCell>
                         <Chip
                           label={ticket.priority}
                           color={ticket.priority === 'high' ? 'error' : 'default'}
                           size="small"
                           variant="outlined"
                         />
-                      </TableCell>
-                      <TableCell>
+                      </TableCell>}
+                      {!isMobile && <TableCell>
                         {new Date(ticket.created_at).toLocaleDateString()}
-                      </TableCell>
+                      </TableCell>}
                       <TableCell align="right">
-                        <Button size="small" startIcon={<MessageSquare />}>
-                          View
+                        <Button size="small" startIcon={!isMobile && <MessageSquare />}>
+                          {isMobile ? "View" : "View"}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -307,12 +346,12 @@ function CustomerDashboard() {
         {/* Account Settings Tab */}
         {tabValue === 2 && (
           <CardContent>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
               Account Settings
             </Typography>
             
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="h6" gutterBottom>
@@ -344,7 +383,7 @@ function CustomerDashboard() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} sm={6}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="h6" gutterBottom>

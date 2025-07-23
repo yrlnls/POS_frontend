@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   TextField, Button, Typography, Container, Box, 
-  Alert, Card, CardContent, Grid, Chip
+  Alert, Card, CardContent, Grid, Chip, useMediaQuery, useTheme
 } from '@mui/material';
 import { Wifi, Lock, User } from 'lucide-react';
 
 export default function Login() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -53,15 +55,15 @@ export default function Login() {
       }}
     >
       <Container maxWidth="md">
-        <Grid container spacing={4} alignItems="center">
+        <Grid container spacing={isMobile ? 2 : 4} alignItems="center">
           {/* Branding Section */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={6} sx={{ order: { xs: 2, md: 1 } }}>
             <Box sx={{ color: 'white', textAlign: { xs: 'center', md: 'left' } }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, justifyContent: { xs: 'center', md: 'flex-start' } }}>
                 <Box
                   sx={{
-                    width: 60,
-                    height: 60,
+                    width: isMobile ? 50 : 60,
+                    height: isMobile ? 50 : 60,
                     borderRadius: 3,
                     backgroundColor: 'rgba(255, 255, 255, 0.2)',
                     display: 'flex',
@@ -70,18 +72,18 @@ export default function Login() {
                     backdropFilter: 'blur(10px)',
                   }}
                 >
-                  <Wifi size={32} />
+                  <Wifi size={isMobile ? 28 : 32} />
                 </Box>
                 <Box>
-                  <Typography variant="h3" fontWeight={700}>
+                  <Typography variant={isMobile ? "h4" : "h3"} fontWeight={700}>
                     Capital POS
                   </Typography>
-                  <Typography variant="h6" sx={{ opacity: 0.9 }}>
+                  <Typography variant={isMobile ? "body1" : "h6"} sx={{ opacity: 0.9 }}>
                     Network Services Management
                   </Typography>
                 </Box>
               </Box>
-              <Typography variant="h5" gutterBottom sx={{ opacity: 0.95 }}>
+              <Typography variant={isMobile ? "h6" : "h5"} gutterBottom sx={{ opacity: 0.95 }}>
                 Comprehensive Point of Sale System
               </Typography>
               <Typography variant="body1" sx={{ opacity: 0.8, mb: 3 }}>
@@ -90,12 +92,12 @@ export default function Login() {
               
               {/* Demo Accounts */}
               <Box>
-                <Typography variant="h6" gutterBottom sx={{ opacity: 0.9 }}>
+                <Typography variant={isMobile ? "body1" : "h6"} gutterBottom sx={{ opacity: 0.9 }}>
                   Demo Accounts
                 </Typography>
                 <Grid container spacing={1}>
                   {demoAccounts.map((account) => (
-                    <Grid item xs={6} sm={3} key={account.role}>
+                    <Grid item xs={6} sm={isMobile ? 6 : 3} key={account.role}>
                       <Card
                         sx={{
                           backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -109,14 +111,14 @@ export default function Login() {
                         }}
                         onClick={() => handleDemoLogin(account)}
                       >
-                        <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                        <CardContent sx={{ p: isMobile ? 1.5 : 2, textAlign: 'center' }}>
                           <Chip
                             label={account.role}
                             color={account.color}
                             size="small"
                             sx={{ mb: 1 }}
                           />
-                          <Typography variant="body2" sx={{ color: 'white', opacity: 0.9 }}>
+                          <Typography variant={isMobile ? "caption" : "body2"} sx={{ color: 'white', opacity: 0.9 }}>
                             {account.username}
                           </Typography>
                         </CardContent>
@@ -129,7 +131,7 @@ export default function Login() {
           </Grid>
 
           {/* Login Form */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={6} sx={{ order: { xs: 1, md: 2 } }}>
             <Card
               sx={{
                 backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -138,12 +140,12 @@ export default function Login() {
                 boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04)',
               }}
             >
-              <CardContent sx={{ p: 4 }}>
+              <CardContent sx={{ p: isMobile ? 3 : 4 }}>
                 <Box sx={{ textAlign: 'center', mb: 4 }}>
                   <Box
                     sx={{
-                      width: 64,
-                      height: 64,
+                      width: isMobile ? 56 : 64,
+                      height: isMobile ? 56 : 64,
                       borderRadius: '50%',
                       backgroundColor: 'primary.main',
                       display: 'flex',
@@ -154,9 +156,9 @@ export default function Login() {
                       mb: 2,
                     }}
                   >
-                    <Lock size={28} />
+                    <Lock size={isMobile ? 24 : 28} />
                   </Box>
-                  <Typography variant="h4" gutterBottom color="primary.main" fontWeight={600}>
+                  <Typography variant={isMobile ? "h5" : "h4"} gutterBottom color="primary.main" fontWeight={600}>
                     Welcome Back
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -205,10 +207,10 @@ export default function Login() {
                     type="submit"
                     fullWidth
                     variant="contained"
-                    size="large"
+                    size={isMobile ? "medium" : "large"}
                     disabled={loading}
                     sx={{
-                      py: 1.5,
+                      py: isMobile ? 1.2 : 1.5,
                       fontSize: '1rem',
                       fontWeight: 600,
                       background: 'linear-gradient(135deg, #1e40af 0%, #0891b2 100%)',

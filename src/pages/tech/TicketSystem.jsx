@@ -7,7 +7,7 @@ import {
   FormControl, InputLabel, Grid,
   Card, CardContent, Button, Dialog,
   DialogTitle, DialogContent, DialogActions,
-  TextField, Tabs, Tab
+  TextField, Tabs, Tab, useMediaQuery, useTheme
 } from '@mui/material';
 import { 
   AlertCircle, Clock, CheckCircle, Users,
@@ -40,6 +40,8 @@ const equipmentStatusColors = {
 
 export default function TicketSystem() {
   // Initialize state with mock data
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [tickets, setTickets] = useState(mockTickets);
   const [equipment, setEquipment] = useState(mockEquipment);
   const [stats, setStats] = useState(mockStats);
@@ -109,9 +111,9 @@ export default function TicketSystem() {
   const resolvedTickets = tickets.filter(t => t.status === 'resolved').length;
 
   return (
-    <Container maxWidth="xl">
+    <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h3" gutterBottom>
+        <Typography variant={isMobile ? "h4" : "h3"} gutterBottom>
           Technical Support Dashboard
         </Typography>
         <Typography variant="body1" color="text.secondary">
@@ -121,7 +123,7 @@ export default function TicketSystem() {
 
       {/* Tech Support Metrics */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={6} sm={6} md={3}>
           <StatCard
             title="Open Tickets"
             value={openTickets.toString()}
@@ -130,7 +132,7 @@ export default function TicketSystem() {
             subtitle="Requires attention"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={6} sm={6} md={3}>
           <StatCard
             title="In Progress"
             value={inProgressTickets.toString()}
@@ -139,7 +141,7 @@ export default function TicketSystem() {
             subtitle="Being worked on"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={6} sm={6} md={3}>
           <StatCard
             title="Resolved Today"
             value={resolvedTickets.toString()}
@@ -148,7 +150,7 @@ export default function TicketSystem() {
             subtitle="Completed tickets"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={6} sm={6} md={3}>
           <StatCard
             title="Avg Response Time"
             value="2.3h"
@@ -162,7 +164,12 @@ export default function TicketSystem() {
       {/* Main Content Tabs */}
       <Card>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
+          <Tabs 
+            value={tabValue} 
+            onChange={(e, newValue) => setTabValue(newValue)}
+            variant={isMobile ? "scrollable" : "standard"}
+            scrollButtons={isMobile ? "auto" : false}
+          >
             <Tab label="Support Tickets" />
             <Tab label="Equipment Inventory" />
             <Tab label="Network Status" />
@@ -173,24 +180,28 @@ export default function TicketSystem() {
         {tabValue === 0 && (
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h5">Support Tickets</Typography>
-              <Button variant="contained" startIcon={<Plus />}>
-                Create Ticket
+              <Typography variant={isMobile ? "h6" : "h5"}>Support Tickets</Typography>
+              <Button 
+                variant="contained" 
+                startIcon={!isMobile && <Plus />}
+                size={isMobile ? "small" : "medium"}
+              >
+                {isMobile ? "Create" : "Create Ticket"}
               </Button>
             </Box>
 
-            <TableContainer>
+            <TableContainer sx={{ overflowX: 'auto' }}>
               <Table>
                 <TableHead>
                   <TableRow>
                     <TableCell>ID</TableCell>
                     <TableCell>Title</TableCell>
-                    <TableCell>Customer</TableCell>
+                    {!isMobile && <TableCell>Customer</TableCell>}
                     <TableCell>Status</TableCell>
-                    <TableCell>Priority</TableCell>
-                    <TableCell>Category</TableCell>
+                    {!isMobile && <TableCell>Priority</TableCell>}
+                    {!isMobile && <TableCell>Category</TableCell>}
                     {user?.role === 'admin' && <TableCell>Assignee</TableCell>}
-                    <TableCell>Created</TableCell>
+                    {!isMobile && <TableCell>Created</TableCell>}
                     <TableCell align="right">Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -203,14 +214,23 @@ export default function TicketSystem() {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" fontWeight={600}>
-                          {ticket.title}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {ticket.description}
-                        </Typography>
+                        <Box>
+                          <Typography variant="body2" fontWeight={600}>
+                            {ticket.title}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {ticket.description}
+                          </Typography>
+                          {isMobile && (
+                            <Box sx={{ mt: 0.5 }}>
+                              <Typography variant="caption" color="text.secondary">
+                                {ticket.customer} • {ticket.priority} • {ticket.category}
+                              </Typography>
+                            </Box>
+                          )}
+                        </Box>
                       </TableCell>
-                      <TableCell>{ticket.customer}</TableCell>
+                      {!isMobile && <TableCell>{ticket.customer}</TableCell>}
                       <TableCell>
                         <Select
                           value={ticket.status}
@@ -223,20 +243,20 @@ export default function TicketSystem() {
                           <MenuItem value="resolved">Resolved</MenuItem>
                         </Select>
                       </TableCell>
-                      <TableCell>
+                      {!isMobile && <TableCell>
                         <Chip 
                           label={ticket.priority} 
                           color={priorityColors[ticket.priority]}
                           size="small"
                         />
-                      </TableCell>
-                      <TableCell>
+                      </TableCell>}
+                      {!isMobile && <TableCell>
                         <Chip 
                           label={ticket.category} 
                           variant="outlined"
                           size="small"
                         />
-                      </TableCell>
+                      </TableCell>}
                       {user?.role === 'admin' && (
                         <TableCell>
                           <FormControl size="small" sx={{ minWidth: 120 }}>
@@ -255,19 +275,19 @@ export default function TicketSystem() {
                           </FormControl>
                         </TableCell>
                       )}
-                      <TableCell>
+                      {!isMobile && <TableCell>
                         {new Date(ticket.created_at).toLocaleDateString()}
-                      </TableCell>
+                      </TableCell>}
                       <TableCell align="right">
                         <Button
                           size="small"
-                          startIcon={<Eye />}
+                          startIcon={!isMobile && <Eye />}
                           onClick={() => {
                             setSelectedTicket(ticket);
                             setTicketDialog(true);
                           }}
                         >
-                          View
+                          {isMobile ? "View" : "View"}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -282,23 +302,27 @@ export default function TicketSystem() {
         {tabValue === 1 && (
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h5">Equipment Inventory</Typography>
-              <Button variant="contained" startIcon={<Plus />}>
-                Add Equipment
+              <Typography variant={isMobile ? "h6" : "h5"}>Equipment Inventory</Typography>
+              <Button 
+                variant="contained" 
+                startIcon={!isMobile && <Plus />}
+                size={isMobile ? "small" : "medium"}
+              >
+                {isMobile ? "Add" : "Add Equipment"}
               </Button>
             </Box>
 
-            <TableContainer>
+            <TableContainer sx={{ overflowX: 'auto' }}>
               <Table>
                 <TableHead>
                   <TableRow>
                     <TableCell>Name</TableCell>
-                    <TableCell>Model</TableCell>
-                    <TableCell>Serial Number</TableCell>
-                    <TableCell>Category</TableCell>
+                    {!isMobile && <TableCell>Model</TableCell>}
+                    {!isMobile && <TableCell>Serial Number</TableCell>}
+                    {!isMobile && <TableCell>Category</TableCell>}
                     <TableCell>Status</TableCell>
-                    <TableCell>Quantity</TableCell>
-                    <TableCell>Price</TableCell>
+                    {!isMobile && <TableCell>Quantity</TableCell>}
+                    {!isMobile && <TableCell>Price</TableCell>}
                     <TableCell align="right">Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -306,23 +330,32 @@ export default function TicketSystem() {
                   {equipment.map((item) => (
                     <TableRow key={item.id} hover>
                       <TableCell>
-                        <Typography variant="body2" fontWeight={600}>
-                          {item.name}
-                        </Typography>
+                        <Box>
+                          <Typography variant="body2" fontWeight={600}>
+                            {item.name}
+                          </Typography>
+                          {isMobile && (
+                            <Box sx={{ mt: 0.5 }}>
+                              <Typography variant="caption" color="text.secondary">
+                                {item.model} • {item.category} • Qty: {item.quantity} • ${item.price}
+                              </Typography>
+                            </Box>
+                          )}
+                        </Box>
                       </TableCell>
-                      <TableCell>{item.model}</TableCell>
-                      <TableCell>
+                      {!isMobile && <TableCell>{item.model}</TableCell>}
+                      {!isMobile && <TableCell>
                         <Typography variant="body2" fontFamily="monospace">
                           {item.serialNumber}
                         </Typography>
-                      </TableCell>
-                      <TableCell>
+                      </TableCell>}
+                      {!isMobile && <TableCell>
                         <Chip 
                           label={item.category} 
                           variant="outlined"
                           size="small"
                         />
-                      </TableCell>
+                      </TableCell>}
                       <TableCell>
                         <Chip 
                           label={item.status.replace('_', ' ')} 
@@ -330,19 +363,19 @@ export default function TicketSystem() {
                           size="small"
                         />
                       </TableCell>
-                      <TableCell>
+                      {!isMobile && <TableCell>
                         <Typography variant="body2" fontWeight={600}>
                           {item.quantity}
                         </Typography>
-                      </TableCell>
-                      <TableCell>
+                      </TableCell>}
+                      {!isMobile && <TableCell>
                         <Typography variant="body2" fontWeight={600}>
                           ${item.price}
                         </Typography>
-                      </TableCell>
+                      </TableCell>}
                       <TableCell align="right">
-                        <Button size="small" startIcon={<Eye />}>
-                          View
+                        <Button size="small" startIcon={!isMobile && <Eye />}>
+                          {isMobile ? "View" : "View"}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -356,12 +389,12 @@ export default function TicketSystem() {
         {/* Network Status Tab */}
         {tabValue === 2 && (
           <CardContent>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
               Network Status Monitor
             </Typography>
             
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} sm={6}>
                 <Card variant="outlined">
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -377,7 +410,7 @@ export default function TicketSystem() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} sm={6}>
                 <Card variant="outlined">
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>

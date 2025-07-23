@@ -4,7 +4,7 @@ import {
   Button, TextField, Dialog, DialogTitle, DialogContent,
   DialogActions, FormControl, InputLabel, Select, MenuItem,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Chip, IconButton, Tabs, Tab
+  Chip, IconButton, Tabs, Tab, useMediaQuery, useTheme
 } from '@mui/material';
 import { 
   Users, DollarSign, TrendingUp, Plus, Search, 
@@ -21,6 +21,8 @@ import { customers as mockCustomers, servicePlans as mockServicePlans, transacti
 
 export default function SalesDashboard() {
   const [tabValue, setTabValue] = useState(0);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [customers, setCustomers] = useState([]);
   const [servicePlans, setServicePlans] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -111,9 +113,9 @@ export default function SalesDashboard() {
   };
 
   return (
-    <Container maxWidth="xl">
+    <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h3" gutterBottom>
+        <Typography variant={isMobile ? "h4" : "h3"} gutterBottom>
           Sales Dashboard
         </Typography>
         <Typography variant="body1" color="text.secondary">
@@ -123,7 +125,7 @@ export default function SalesDashboard() {
 
       {/* Sales Metrics */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={6} sm={6} md={3}>
           <StatCard
             title="Total Customers"
             value={customers.length?.toString() || '0'}
@@ -132,7 +134,7 @@ export default function SalesDashboard() {
             subtitle="Active subscribers"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={6} sm={6} md={3}>
           <StatCard
             title="Monthly Sales"
             value={`$${stats.monthlySales?.toLocaleString() || '0'}`}
@@ -141,7 +143,7 @@ export default function SalesDashboard() {
             trend={stats.salesGrowthRate}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={6} sm={6} md={3}>
           <StatCard
             title="New Customers"
             value={stats.newCustomersThisMonth?.toString() || '0'}
@@ -150,7 +152,7 @@ export default function SalesDashboard() {
             subtitle="This month"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={6} sm={6} md={3}>
           <StatCard
             title="Conversion Rate"
             value={`${stats.conversionRate || 0}%`}
@@ -164,7 +166,12 @@ export default function SalesDashboard() {
       {/* Main Content Tabs */}
       <Card>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
+          <Tabs 
+            value={tabValue} 
+            onChange={(e, newValue) => setTabValue(newValue)}
+            variant={isMobile ? "scrollable" : "standard"}
+            scrollButtons={isMobile ? "auto" : false}
+          >
             <Tab label="Customers" />
             <Tab label="Service Plans" />
             <Tab label="Transactions" />
@@ -174,18 +181,7 @@ export default function SalesDashboard() {
         {/* Customers Tab */}
         {tabValue === 0 && (
           <CardContent>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <TextField
-                placeholder="Search customers..."
-                variant="outlined"
-                size="small"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                InputProps={{
-                  startAdornment: <Search size={20} style={{ marginRight: 8, color: '#64748b' }} />,
-                }}
-                sx={{ minWidth: 300 }}
-              />
+
               <Button
                 variant="contained"
                 startIcon={<Plus />}

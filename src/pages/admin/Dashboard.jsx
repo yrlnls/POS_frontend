@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import {
   Container, Typography, Box, Grid, Card, CardContent,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, Chip, Button, IconButton, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Tabs, Tab
+  Paper, Chip, Button, IconButton, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Tabs, Tab,
+  useMediaQuery, useTheme
 } from '@mui/material';
 import { 
   Users, DollarSign, Wifi, AlertCircle, TrendingUp, 
@@ -49,6 +50,8 @@ const mockSettings = {
 
 export default function AdminDashboard() {
   const [tabValue, setTabValue] = useState(0);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState({});
   const [salesData, setSalesData] = useState([]);
@@ -161,9 +164,9 @@ export default function AdminDashboard() {
   };
 
   return (
-    <Container maxWidth="xl">
+    <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h3" gutterBottom>
+        <Typography variant={isMobile ? "h4" : "h3"} gutterBottom>
           Admin Dashboard
         </Typography>
         <Typography variant="body1" color="text.secondary">
@@ -171,7 +174,13 @@ export default function AdminDashboard() {
         </Typography>
       </Box>
 
-      <Tabs value={tabValue} onChange={handleTabChange} sx={{ mb: 3 }}>
+      <Tabs 
+        value={tabValue} 
+        onChange={handleTabChange} 
+        sx={{ mb: 3 }}
+        variant={isMobile ? "scrollable" : "standard"}
+        scrollButtons={isMobile ? "auto" : false}
+      >
         <Tab label="Users" />
         <Tab label="Analytics" />
         <Tab label="Settings" />
@@ -183,19 +192,24 @@ export default function AdminDashboard() {
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                <Typography variant="h5">User Management</Typography>
-                <Button variant="contained" startIcon={<Plus />} onClick={openAddUserDialog}>
-                  Add User
+                <Typography variant={isMobile ? "h6" : "h5"}>User Management</Typography>
+                <Button 
+                  variant="contained" 
+                  startIcon={!isMobile && <Plus />} 
+                  onClick={openAddUserDialog}
+                  size={isMobile ? "small" : "medium"}
+                >
+                  {isMobile ? "Add" : "Add User"}
                 </Button>
               </Box>
-              <TableContainer>
+              <TableContainer sx={{ overflowX: 'auto' }}>
                 <Table>
                   <TableHead>
                     <TableRow>
                       <TableCell>Username</TableCell>
-                      <TableCell>Role</TableCell>
-                      <TableCell>Email</TableCell>
-                      <TableCell>Status</TableCell>
+                      {!isMobile && <TableCell>Role</TableCell>}
+                      {!isMobile && <TableCell>Email</TableCell>}
+                      {!isMobile && <TableCell>Status</TableCell>}
                       <TableCell align="right">Actions</TableCell>
                     </TableRow>
                   </TableHead>
@@ -203,26 +217,44 @@ export default function AdminDashboard() {
                     {users.map((user) => (
                       <TableRow key={user.id} hover>
                         <TableCell>
-                          <Typography variant="body2" fontWeight={600}>
-                            {user.username}
-                          </Typography>
+                          <Box>
+                            <Typography variant="body2" fontWeight={600}>
+                              {user.username}
+                            </Typography>
+                            {isMobile && (
+                              <Box sx={{ mt: 0.5 }}>
+                                <Chip
+                                  label={user.role}
+                                  color={getRoleColor(user.role)}
+                                  size="small"
+                                  variant="outlined"
+                                  sx={{ mr: 1 }}
+                                />
+                                <Chip
+                                  label={user.status}
+                                  color={user.status === 'active' ? 'success' : 'default'}
+                                  size="small"
+                                />
+                              </Box>
+                            )}
+                          </Box>
                         </TableCell>
-                        <TableCell>
+                        {!isMobile && <TableCell>
                           <Chip
                             label={user.role}
                             color={getRoleColor(user.role)}
                             size="small"
                             variant="outlined"
                           />
-                        </TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>
+                        </TableCell>}
+                        {!isMobile && <TableCell>{user.email}</TableCell>}
+                        {!isMobile && <TableCell>
                           <Chip
                             label={user.status}
                             color={user.status === 'active' ? 'success' : 'default'}
                             size="small"
                           />
-                        </TableCell>
+                        </TableCell>}
                         <TableCell align="right">
                           <IconButton
                             size="small"
@@ -298,7 +330,7 @@ export default function AdminDashboard() {
         <>
           {/* Analytics */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={6} sm={6} md={3}>
               <StatCard
                 title="Total Customers"
                 value={stats.totalCustomers?.toLocaleString() || '0'}
@@ -307,7 +339,7 @@ export default function AdminDashboard() {
                 trend={stats.customerGrowthRate}
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={6} sm={6} md={3}>
               <StatCard
                 title="Monthly Revenue"
                 value={`$${stats.monthlyRevenue?.toLocaleString() || '0'}`}
@@ -316,7 +348,7 @@ export default function AdminDashboard() {
                 trend={stats.revenueGrowthRate}
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={6} sm={6} md={3}>
               <StatCard
                 title="Active Services"
                 value={stats.activeServices?.toLocaleString() || '0'}
@@ -325,7 +357,7 @@ export default function AdminDashboard() {
                 trend={stats.serviceGrowthRate}
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={6} sm={6} md={3}>
               <StatCard
                 title="Open Tickets"
                 value={stats.openTickets || '0'}
@@ -339,12 +371,17 @@ export default function AdminDashboard() {
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                <Typography variant="h5">Revenue Trends</Typography>
-                <Button startIcon={<TrendingUp />} variant="outlined" size="small" onClick={() => setViewReportDialogOpen(true)}>
-                  View Report
+                <Typography variant={isMobile ? "h6" : "h5"}>Revenue Trends</Typography>
+                <Button 
+                  startIcon={!isMobile && <TrendingUp />} 
+                  variant="outlined" 
+                  size="small" 
+                  onClick={() => setViewReportDialogOpen(true)}
+                >
+                  {isMobile ? "Report" : "View Report"}
                 </Button>
               </Box>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
                 <LineChart data={salesData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
@@ -382,14 +419,14 @@ export default function AdminDashboard() {
           {/* Settings */}
           <Card>
             <CardContent>
-              <Typography variant="h5" gutterBottom>
+              <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
                 System Settings
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Typography>System Name: Demo Network System</Typography>
                 <Typography>Maintenance Mode: Off</Typography>
                 <Typography>Max Users: 1000</Typography>
-                <Button variant="contained" sx={{ mt: 2 }}>
+                <Button variant="contained" sx={{ mt: 2 }} size={isMobile ? "small" : "medium"}>
                   Save Settings
                 </Button>
               </Box>
