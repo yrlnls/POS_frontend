@@ -6,7 +6,7 @@ import {
   useMediaQuery, useTheme
 } from '@mui/material';
 import { LayoutDashboard as Dashboard, Users, CreditCard, Headphones, User, Settings, LogOut, Wifi, BarChart3, Wrench, Menu as MenuIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const drawerWidth = 260;
@@ -46,6 +46,37 @@ export default function Layout() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [hideNavbar, setHideNavbar] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  // Auto-hide navbar on mobile scroll
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scrolling down and past 100px
+        setHideNavbar(true);
+      } else if (currentScrollY < lastScrollY) {
+        // Scrolling up
+        setHideNavbar(false);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY, isMobile]);
+
+  // Reset navbar visibility when drawer opens/closes
+  useEffect(() => {
+    if (mobileOpen) {
+      setHideNavbar(false);
+    }
+  }, [mobileOpen]);
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -169,6 +200,12 @@ export default function Layout() {
           backgroundColor: 'white',
           color: 'text.primary',
           boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+          transform: { 
+            xs: hideNavbar ? 'translateY(-100%)' : 'translateY(0)',
+            md: 'translateY(0)'
+          },
+          transition: 'transform 0.3s ease-in-out',
+          zIndex: theme.zIndex.drawer + 1,
         }}
       >
         <Toolbar>
@@ -267,9 +304,11 @@ export default function Layout() {
           flexGrow: 1, 
           p: { xs: 2, sm: 3 }, 
           width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
-          marginTop: '64px',
+          marginTop: { xs: hideNavbar ? '0' : '64px', md: '64px' },
           backgroundColor: '#f8fafc',
           minHeight: 'calc(100vh - 64px)',
+          transition: 'margin-top 0.3s ease-in-out',
+          paddingTop: { xs: hideNavbar ? '80px' : '16px', sm: '24px' },
         }}
       >
         <Outlet />
