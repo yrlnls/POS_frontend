@@ -53,8 +53,10 @@ export function AuthProvider({ children }) {
         if (user) {
             // Set user state with mock user data
             setUser({ username: user.username, role: user.role });
-            // Optionally set a mock token in localStorage
-            localStorage.setItem('token', 'mock-token');
+            // Create a simple mock JWT token
+            const mockPayload = { username: user.username, role: user.role };
+            const mockToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${btoa(JSON.stringify(mockPayload))}.mock-signature`;
+            localStorage.setItem('token', mockToken);
             return { success: true, role: user.role };
         } else {
             return { success: false, message: 'Invalid username or password' };

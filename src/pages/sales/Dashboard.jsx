@@ -217,6 +217,7 @@ export default function SalesDashboard() {
               ))}
             </Grid>
           </CardContent>
+          </CardContent>
         )}
 
         {/* Service Plans Tab */}
