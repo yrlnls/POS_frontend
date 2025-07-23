@@ -181,19 +181,33 @@ export default function SalesDashboard() {
         {/* Customers Tab */}
         {tabValue === 0 && (
           <CardContent>
-
-              <Button
-                variant="contained"
-                startIcon={<Plus />}
-                onClick={() => setCustomerDialog(true)}
-              >
-                Add Customer
-              </Button>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, width: '100%' }}>
+                <TextField
+                  placeholder="Search customers..."
+                  variant="outlined"
+                  size="small"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  InputProps={{
+                    startAdornment: <Search size={20} style={{ marginRight: 8, color: '#64748b' }} />,
+                  }}
+                  sx={{ flex: 1, minWidth: { xs: '100%', sm: 300 } }}
+                />
+                <Button
+                  variant="contained"
+                  startIcon={!isMobile && <Plus />}
+                  onClick={() => setCustomerDialog(true)}
+                  size={isMobile ? "small" : "medium"}
+                >
+                  {isMobile ? "Add" : "Add Customer"}
+                </Button>
+              </Box>
             </Box>
 
-            <Grid container spacing={3}>
+            <Grid container spacing={2}>
               {filteredCustomers.map((customer) => (
-                <Grid item xs={12} md={6} lg={4} key={customer.id}>
+                <Grid item xs={12} sm={6} lg={4} key={customer.id}>
                   <CustomerCard
                     customer={customer}
                     onView={(customer) => console.log('View customer:', customer)}
@@ -209,7 +223,7 @@ export default function SalesDashboard() {
         {tabValue === 1 && (
           <CardContent>
             <Box sx={{ mb: 3 }}>
-              <Typography variant="h5" gutterBottom>
+              <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
                 Available Service Plans
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -217,9 +231,9 @@ export default function SalesDashboard() {
               </Typography>
             </Box>
 
-            <Grid container spacing={3}>
+            <Grid container spacing={2}>
               {servicePlans.map((plan) => (
-                <Grid item xs={12} md={6} lg={4} key={plan.id}>
+                <Grid item xs={12} sm={6} lg={4} key={plan.id}>
                   <ServicePlanCard
                     plan={plan}
                     selected={selectedPlan?.id === plan.id}
@@ -235,21 +249,21 @@ export default function SalesDashboard() {
         {tabValue === 2 && (
           <CardContent>
             <Box sx={{ mb: 3 }}>
-              <Typography variant="h5" gutterBottom>
+              <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
                 Recent Transactions
               </Typography>
             </Box>
 
-            <TableContainer>
+            <TableContainer sx={{ overflowX: 'auto' }}>
               <Table>
                 <TableHead>
                   <TableRow>
                     <TableCell>Customer</TableCell>
-                    <TableCell>Amount</TableCell>
-                    <TableCell>Type</TableCell>
+                    {!isMobile && <TableCell>Amount</TableCell>}
+                    {!isMobile && <TableCell>Type</TableCell>}
                     <TableCell>Status</TableCell>
-                    <TableCell>Date</TableCell>
-                    <TableCell>Method</TableCell>
+                    {!isMobile && <TableCell>Date</TableCell>}
+                    {!isMobile && <TableCell>Method</TableCell>}
                     <TableCell align="right">Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -257,25 +271,34 @@ export default function SalesDashboard() {
                   {transactions.map((transaction) => (
                     <TableRow key={transaction.id} hover>
                       <TableCell>
-                        <Typography variant="body2" fontWeight={600}>
-                          {transaction.customerName}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {transaction.description}
-                        </Typography>
+                        <Box>
+                          <Typography variant="body2" fontWeight={600}>
+                            {transaction.customerName}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {transaction.description}
+                          </Typography>
+                          {isMobile && (
+                            <Box sx={{ mt: 0.5 }}>
+                              <Typography variant="caption" fontWeight={600}>
+                                ${transaction.amount} • {transaction.type}
+                              </Typography>
+                            </Box>
+                          )}
+                        </Box>
                       </TableCell>
-                      <TableCell>
+                      {!isMobile && <TableCell>
                         <Typography variant="body2" fontWeight={600}>
                           ${transaction.amount}
                         </Typography>
-                      </TableCell>
-                      <TableCell>
+                      </TableCell>}
+                      {!isMobile && <TableCell>
                         <Chip
                           label={transaction.type}
                           size="small"
                           variant="outlined"
                         />
-                      </TableCell>
+                      </TableCell>}
                       <TableCell>
                         <Chip
                           label={transaction.status}
@@ -283,16 +306,16 @@ export default function SalesDashboard() {
                           size="small"
                         />
                       </TableCell>
-                      <TableCell>
+                      {!isMobile && <TableCell>
                         {new Date(transaction.date).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
+                      </TableCell>}
+                      {!isMobile && <TableCell>
                         <Chip
                           label={transaction.method.replace('_', ' ')}
                           size="small"
                           variant="outlined"
                         />
-                      </TableCell>
+                      </TableCell>}
                       <TableCell align="right">
                         <IconButton size="small">
                           <Eye size={16} />
